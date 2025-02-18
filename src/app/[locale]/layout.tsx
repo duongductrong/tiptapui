@@ -1,25 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ThemeProvider } from "@/components/ui/theme-provider"
 import { routing } from "@/i18n/routing"
+import { TanstackQueryClientProvider } from "@/lib/tanstack-query"
 import { cn } from "@/lib/tw"
 import type { Metadata } from "next"
 import { NextIntlClientProvider } from "next-intl"
 import { getMessages } from "next-intl/server"
-import { Geist, Inter } from "next/font/google"
+import { Inter } from "next/font/google"
 import { notFound } from "next/navigation"
-
-import SessionProvider from "@/features/auth/components/session"
-import { auth } from "auth"
 import "../globals.css"
-import { TanstackQueryClientProvider } from "@/lib/tanstack-query"
 
 const inter = Inter({
   variable: "--font-inter",
-  subsets: ["latin"],
-})
-
-const geist = Geist({
-  variable: "--font-geist",
   subsets: ["latin"],
 })
 
@@ -42,20 +34,16 @@ export default async function RootLayout({ children, params }: LayoutProps) {
     return notFound()
   }
 
-  const [messages, session] = await Promise.all([
-    getMessages({ locale: locale }),
-    auth(),
-  ])
+  const [messages] = await Promise.all([getMessages({ locale: locale })])
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body
-        className={cn(inter.variable, geist.variable, "font-sans antialiased")}
-      >
+      <body className={cn(inter.variable, "font-sans antialiased")}>
         <NextIntlClientProvider messages={messages} locale={locale}>
           <ThemeProvider attribute="class" forcedTheme="light">
             <TanstackQueryClientProvider>
-              <SessionProvider session={session}>{children}</SessionProvider>
+              {/* <SessionProvider session={session}>{children}</SessionProvider> */}
+              {children}
             </TanstackQueryClientProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
