@@ -10,8 +10,17 @@ export default {
   ],
   theme: {
     extend: {
+      container: {
+        screens: {
+          sm: "640px",
+          md: "768px",
+          lg: "1024px",
+          xl: "1140px",
+          "2xl": "1140px",
+        },
+      },
       fontFamily: {
-        sans: ["var(--font-inter)", "var(--font-geist)", ...fontFamily.sans],
+        sans: ["var(--font-inter)", ...fontFamily.sans],
       },
       colors: {
         background: "hsl(var(--background))",
