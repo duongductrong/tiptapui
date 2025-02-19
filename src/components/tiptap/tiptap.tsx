@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/tw"
 import { TextAlign } from "@tiptap/extension-text-align"
+import TiptapUnderline from "@tiptap/extension-underline"
 import {
   BubbleMenu,
   Editor,
@@ -61,6 +62,11 @@ import { ScrollArea } from "../ui/scroll-area"
 
 const extensions = [
   StarterKit,
+  TiptapUnderline.configure({
+    HTMLAttributes: {
+      class: "underline underline-offset-4",
+    },
+  }),
   TextAlign.configure({
     types: ["heading", "paragraph"],
   }),
@@ -710,6 +716,9 @@ export function onTiptapEventChangeBlock(editor: Editor, key: TiptapAction) {
       break
     case tiptapActions.right:
       editor.chain().focus().setTextAlign("right").run()
+    case tiptapActions.underline:
+      editor.chain().focus().toggleUnderline().run()
+      break
   }
 }
 
@@ -759,6 +768,8 @@ export function canUseAction(editor: Editor, action: TiptapAction) {
       return editor.can().chain().focus().setTextAlign("center").run()
     case tiptapActions.right:
       return editor.can().chain().focus().setTextAlign("right").run()
+    case tiptapActions.underline:
+      return editor.can().chain().focus().toggleUnderline().run()
   }
 }
 
