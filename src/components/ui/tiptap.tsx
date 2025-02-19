@@ -4,72 +4,96 @@
 
 import { Button } from "@/components/ui/button"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/tw"
 import { TextAlign } from "@tiptap/extension-text-align"
+import TiptapTypography from "@tiptap/extension-typography"
 import TiptapUnderline from "@tiptap/extension-underline"
 import {
-  BubbleMenu,
-  Editor,
-  EditorContent,
-  FloatingMenu,
-  useEditor,
+    BubbleMenu,
+    Editor,
+    EditorContent,
+    FloatingMenu,
+    useEditor,
 } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import {
-  AlignCenter,
-  AlignJustify,
-  AlignLeft,
-  AlignRight,
-  Bold,
-  ChevronDown,
-  Code,
-  Code2,
-  Heading1,
-  Heading2,
-  Heading3,
-  Heading4,
-  Heading5,
-  Heading6,
-  Italic,
-  List,
-  ListOrdered,
-  Minus,
-  Redo,
-  Strikethrough,
-  TextQuote,
-  Type,
-  Underline,
-  Undo,
+    AlignCenter,
+    AlignJustify,
+    AlignLeft,
+    AlignRight,
+    Bold,
+    ChevronDown,
+    Code,
+    Code2,
+    Heading1,
+    Heading2,
+    Heading3,
+    Heading4,
+    Heading5,
+    Heading6,
+    Italic,
+    List,
+    ListOrdered,
+    Minus,
+    Redo,
+    Strikethrough,
+    TextQuote,
+    Type,
+    Underline,
+    Undo,
 } from "lucide-react"
 import React, {
-  cloneElement,
-  ComponentProps,
-  createContext,
-  Fragment,
-  PropsWithChildren,
-  ReactElement,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
+    cloneElement,
+    ComponentProps,
+    createContext,
+    Fragment,
+    PropsWithChildren,
+    ReactElement,
+    useContext,
+    useMemo,
 } from "react"
 import { ScrollArea } from "./scroll-area"
 
 const extensions = [
+  /**
+   * >Nodes
+   * Blockquote, BulletList, CodeBlock, Document, HardBreak, Heading,
+   * HorizontalRule, ListItem, OrderedList, Paragraph, Text
+   *
+   * >Marks
+   * Bold, Code, Italic, Strike
+   *
+   * >Extensions
+   * Dropcursor, Gapcursor, History
+   * @reference https://tiptap.dev/api/extensions/starter-kit
+   */
   StarterKit,
+
+  /**
+   * @reference https://tiptap.dev/docs/editor/extensions/marks/underline
+   */
   TiptapUnderline.configure({
     HTMLAttributes: {
       class: "underline underline-offset-4",
     },
   }),
+
+  /**
+   * @reference https://tiptap.dev/api/extensions/text-align
+   */
   TextAlign.configure({
     types: ["heading", "paragraph"],
   }),
+
+  /**
+   * @reference https://tiptap.dev/api/extensions/typography
+   */
+  TiptapTypography.configure({}),
 ]
 
 const tiptapActions = {
@@ -382,7 +406,7 @@ export const TiptapLabel = ({
   filteredActions,
   ...props
 }: TiptapLabelProps) => {
-  const keyLabels = useTiptapEditorCurrentKeyAction()
+  const keyLabels = useTiptapEditorCurrentActionKeys()
 
   const tiptapBlocks = useMemo(() => {
     const filteredKeyLabels = filteredActions?.length
@@ -619,34 +643,16 @@ export const TipTapBubbleMenu = (props: TipTapBubbleMenuProps) => {
   )
 }
 
-export function useTiptapEditorCurrentKeyAction() {
+export function useTiptapEditorCurrentActionKeys() {
   const { editor } = useTiptapEditor()
-  const [key, setKey] = useState<TiptapAction[]>([tiptapActions.text])
+  const selectionKeys = getCurrentTiptapAction(editor)
 
-  useEffect(() => {
-    if (editor) {
-      editor.on("update", () => {
-        setKey(getCurrentTiptapAction(editor))
-      })
-    }
-  }, [editor])
-
-  return key
+  return selectionKeys.length ? selectionKeys : [tiptapActions.text]
 }
 
 export function useTiptapEditorIsActive(key: TiptapAction) {
-  const [isActive, setIsActive] = useState(false)
   const { editor } = useTiptapEditor()
-
-  useEffect(() => {
-    if (editor) {
-      editor.on("update", () => {
-        setIsActive(editor.isActive(key))
-      })
-    }
-  }, [editor, key])
-
-  return isActive
+  return !editor ? false : editor?.isActive(key)
 }
 
 export function onTiptapEventChangeBlock(editor: Editor, key: TiptapAction) {
@@ -724,6 +730,7 @@ export function onTiptapEventChangeBlock(editor: Editor, key: TiptapAction) {
 
 export function canUseAction(editor: Editor, action: TiptapAction) {
   switch (action) {
+    // Required @tiptap/starter-kit
     case tiptapActions.undo:
       return editor.can().chain().focus().undo().run()
     case tiptapActions.redo:
@@ -762,12 +769,14 @@ export function canUseAction(editor: Editor, action: TiptapAction) {
       return editor.can().chain().focus().toggleBulletList().run()
     case tiptapActions.orderedList:
       return editor.can().chain().focus().toggleOrderedList().run()
+    // Required @tiptap/extension-text-align
     case tiptapActions.left:
       return editor.can().chain().focus().setTextAlign("left").run()
     case tiptapActions.center:
       return editor.can().chain().focus().setTextAlign("center").run()
     case tiptapActions.right:
       return editor.can().chain().focus().setTextAlign("right").run()
+    // Required @tiptap/extension-underline
     case tiptapActions.underline:
       return editor.can().chain().focus().toggleUnderline().run()
   }

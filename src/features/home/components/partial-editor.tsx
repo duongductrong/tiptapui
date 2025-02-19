@@ -58,6 +58,7 @@ const PartialEditor = (props: PartialEditorProps) => {
               "heading6",
               "divider",
               "codeBlock",
+              "blockquote"
             ]}
             label=":icon :label"
           />
