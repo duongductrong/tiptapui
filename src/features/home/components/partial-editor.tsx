@@ -5,7 +5,7 @@ import {
   TiptapEditor,
   TiptapLabel,
   TiptapToolbar
-} from "@/components/tiptap/tiptap"
+} from "@/components/ui/tiptap"
 
 export interface PartialEditorProps {}
 

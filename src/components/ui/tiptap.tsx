@@ -58,7 +58,7 @@ import React, {
   useMemo,
   useState,
 } from "react"
-import { ScrollArea } from "../ui/scroll-area"
+import { ScrollArea } from "./scroll-area"
 
 const extensions = [
   StarterKit,
