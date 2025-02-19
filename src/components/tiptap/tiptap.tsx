@@ -46,16 +46,20 @@ import {
   List,
   ListOrdered,
   Minus,
+  Redo,
   Strikethrough,
   TextQuote,
   Type,
   Underline,
+  Undo,
 } from "lucide-react"
 import { ScrollArea } from "../ui/scroll-area"
 
 const extensions = [StarterKit]
 
 const tiptapActions = {
+  undo: "undo",
+  redo: "redo",
   bold: "bold",
   italic: "italic",
   underline: "underline",
@@ -85,6 +89,24 @@ type TiptapBlock = {
 }
 
 const tiptapBlocksMap = new Map<TiptapAction, TiptapBlock>([
+  [
+    tiptapActions.undo,
+    {
+      key: tiptapActions.undo,
+      icon: Undo,
+      label: "Undo",
+      description: "Undo the last action",
+    },
+  ],
+  [
+    tiptapActions.redo,
+    {
+      key: tiptapActions.redo,
+      icon: Redo,
+      label: "Redo",
+      description: "Redo the last action",
+    },
+  ],
   [
     tiptapActions.text,
     {
@@ -278,7 +300,7 @@ export const TiptapEditor = ({
 
   const sharedValues = useMemo<TipTapContextType>(
     () => ({ editor: editor! }),
-    [editor]
+    [editor?.state]
   )
 
   return (
@@ -366,9 +388,11 @@ export interface TiptapButtonProps extends ComponentProps<typeof Button> {
 export const TiptapButton = ({
   action,
   children,
+  className,
   ...props
 }: TiptapButtonProps) => {
   const { editor } = useTiptapEditor()
+
   const isActive = useTiptapEditorIsActive(action)
 
   const handleOnClick = () => {
@@ -377,13 +401,17 @@ export const TiptapButton = ({
 
   const block = useMemo(() => tiptapBlocksMap.get(action), [action])
 
+  if (!editor) return null
+
   return (
     <Button
       variant={isActive ? "secondary" : "ghost"}
       size="icon"
       {...props}
+      className={cn("size-8 min-w-8", className)}
       onClick={handleOnClick}
       aria-label={block?.label}
+      // disabled={!editor?.can().chain().focus().undo().run()}
     >
       {cloneElement(children as ReactElement, { action } as any)}
     </Button>
@@ -400,6 +428,8 @@ export const TiptapBlocks = (props: TiptapBlocksProps) => {
   const handleChangeBlock = (key: TiptapAction) => {
     onTiptapEventChangeBlock(editor, key)
   }
+
+  if (!editor) return null
 
   return (
     <DropdownMenu>
@@ -459,6 +489,8 @@ export interface TiptapContentProps
 export const TiptapContent = ({ className, ...props }: TiptapContentProps) => {
   const { editor } = useContext(TipTapContext)
 
+  if (!editor) return null
+
   return (
     <EditorContent
       {...props}
@@ -506,6 +538,8 @@ export interface TipTapBubbleMenuProps
 export const TipTapBubbleMenu = (props: TipTapBubbleMenuProps) => {
   const { editor } = useContext(TipTapContext)
 
+  if (!editor) return null
+
   return (
     <BubbleMenu {...props} editor={editor}>
       This is the bubble menu
@@ -545,6 +579,12 @@ export function useTiptapEditorIsActive(key: TiptapAction) {
 
 export function onTiptapEventChangeBlock(editor: Editor, key: TiptapAction) {
   switch (key) {
+    case tiptapActions.undo:
+      editor.chain().focus().undo().run()
+      break
+    case tiptapActions.redo:
+      editor.chain().focus().redo().run()
+      break
     case tiptapActions.text:
       editor.chain().focus().setParagraph().run()
       break

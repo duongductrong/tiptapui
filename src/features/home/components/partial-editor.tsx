@@ -22,6 +22,13 @@ const PartialEditor = (props: PartialEditorProps) => {
 }</code></pre><p>I know, I know, this is impressive. It’s only the tip of the iceberg though. Give it a try and click a little bit around. Don’t forget to check the other examples too.</p><blockquote><p>Wow, that’s amazing. Good work, boy! 👏 <br>— Mom</p></blockquote>`}
     >
       <TiptapToolbar className="justify-center">
+        <TiptapButton action="undo">
+          <TiptapLabel label=":icon" />
+        </TiptapButton>
+        <TiptapButton action="redo">
+          <TiptapLabel label=":icon" />
+        </TiptapButton>
+        |
         <TiptapBlocks label=":icon :label" /> |
         <TiptapButton action="bold">
           <TiptapLabel label=":icon" />
