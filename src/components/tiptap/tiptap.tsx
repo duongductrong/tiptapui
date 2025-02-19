@@ -2,7 +2,15 @@
 
 "use client"
 
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/tw"
+import { TextAlign } from "@tiptap/extension-text-align"
 import {
   BubbleMenu,
   Editor,
@@ -11,27 +19,11 @@ import {
   useEditor,
 } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
-import React, {
-  cloneElement,
-  ComponentProps,
-  createContext,
-  Fragment,
-  PropsWithChildren,
-  ReactElement,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react"
-
-import { Button } from "@/components/ui/button"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
+  AlignCenter,
+  AlignJustify,
+  AlignLeft,
+  AlignRight,
   Bold,
   ChevronDown,
   Code,
@@ -53,9 +45,26 @@ import {
   Underline,
   Undo,
 } from "lucide-react"
+import React, {
+  cloneElement,
+  ComponentProps,
+  createContext,
+  Fragment,
+  PropsWithChildren,
+  ReactElement,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
 import { ScrollArea } from "../ui/scroll-area"
 
-const extensions = [StarterKit]
+const extensions = [
+  StarterKit,
+  TextAlign.configure({
+    types: ["heading", "paragraph"],
+  }),
+]
 
 const tiptapActions = {
   undo: "undo",
@@ -77,6 +86,10 @@ const tiptapActions = {
   bulletList: "bulletList",
   orderedList: "orderedList",
   codeBlock: "codeBlock",
+  left: "left",
+  center: "center",
+  right: "right",
+  justify: "justify",
 } as const
 
 type TiptapAction = (typeof tiptapActions)[keyof typeof tiptapActions]
@@ -260,6 +273,42 @@ const tiptapBlocksMap = new Map<TiptapAction, TiptapBlock>([
       description: "Create an ordered list",
     },
   ],
+  [
+    tiptapActions.left,
+    {
+      key: tiptapActions.left,
+      icon: AlignLeft,
+      label: "Left",
+      description: "Align text to the left",
+    },
+  ],
+  [
+    tiptapActions.center,
+    {
+      key: tiptapActions.center,
+      icon: AlignCenter,
+      label: "Center",
+      description: "Align text to the center",
+    },
+  ],
+  [
+    tiptapActions.right,
+    {
+      key: tiptapActions.right,
+      icon: AlignRight,
+      label: "Right",
+      description: "Align text to the right",
+    },
+  ],
+  [
+    tiptapActions.justify,
+    {
+      key: tiptapActions.justify,
+      icon: AlignJustify,
+      label: "Justify",
+      description: "Align text to the justify",
+    },
+  ],
 ])
 
 const tiptapAllBlocks = Array.from(tiptapBlocksMap.values())
@@ -316,20 +365,26 @@ export const TiptapEditor = ({
 export interface TiptapLabelProps extends ComponentProps<"div"> {
   action?: TiptapAction
   label: ":icon :label" | ":label" | ":label :icon" | ":icon"
+
+  filteredActions?: TiptapAction[]
 }
 
 export const TiptapLabel = ({
   className,
   action,
   label: labelPattern = ":label",
+  filteredActions,
   ...props
 }: TiptapLabelProps) => {
   const keyLabels = useTiptapEditorCurrentKeyAction()
 
-  const tiptapBlocks = useMemo(
-    () => keyLabels.map((key) => tiptapBlocksMap.get(key)!),
-    [keyLabels]
-  )
+  const tiptapBlocks = useMemo(() => {
+    const filteredKeyLabels = filteredActions?.length
+      ? keyLabels.filter((k) => filteredActions.includes(k))
+      : keyLabels
+
+    return filteredKeyLabels.map((key) => tiptapBlocksMap.get(key)!)
+  }, [keyLabels])
 
   const getLabelNode = (block: TiptapBlock) => {
     if (labelPattern === ":icon :label") {
@@ -411,7 +466,7 @@ export const TiptapButton = ({
       className={cn("size-8 min-w-8", className)}
       onClick={handleOnClick}
       aria-label={block?.label}
-      // disabled={!editor?.can().chain().focus().undo().run()}
+      disabled={!canUseAction(editor, action)}
     >
       {cloneElement(children as ReactElement, { action } as any)}
     </Button>
@@ -420,9 +475,15 @@ export const TiptapButton = ({
 
 export interface TiptapBlocksProps extends ComponentProps<typeof DropdownMenu> {
   label: TiptapLabelProps["label"]
+
+  actions: TiptapAction[]
 }
 
-export const TiptapBlocks = (props: TiptapBlocksProps) => {
+export const TiptapBlocks = ({
+  label,
+  actions = tiptapAllBlocks.map((block) => block.key),
+  ...props
+}: TiptapBlocksProps) => {
   const { editor } = useTiptapEditor()
 
   const handleChangeBlock = (key: TiptapAction) => {
@@ -431,8 +492,10 @@ export const TiptapBlocks = (props: TiptapBlocksProps) => {
 
   if (!editor) return null
 
+  const filteredBlocks = actions.map((action) => tiptapBlocksMap.get(action)!)
+
   return (
-    <DropdownMenu>
+    <DropdownMenu {...props}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
@@ -440,14 +503,17 @@ export const TiptapBlocks = (props: TiptapBlocksProps) => {
           className="shadow-none"
           aria-label="Open blocks menu"
         >
-          <TiptapLabel label={props.label} />
+          <TiptapLabel
+            label={label}
+            filteredActions={filteredBlocks.map((k) => k.key)}
+          />
 
           <ChevronDown className="size-3 text-muted-foreground ml-1" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="pb-2">
         <ScrollArea className="max-h-[300px] overflow-auto">
-          {tiptapAllBlocks.map((item) => (
+          {filteredBlocks.map((item) => (
             <DropdownMenuItem
               key={item.label}
               onClick={() => handleChangeBlock(item.key)}
@@ -636,6 +702,63 @@ export function onTiptapEventChangeBlock(editor: Editor, key: TiptapAction) {
     case tiptapActions.orderedList:
       editor.chain().focus().toggleOrderedList().run()
       break
+    case tiptapActions.left:
+      editor.chain().focus().setTextAlign("left").run()
+      break
+    case tiptapActions.center:
+      editor.chain().focus().setTextAlign("center").run()
+      break
+    case tiptapActions.right:
+      editor.chain().focus().setTextAlign("right").run()
+  }
+}
+
+export function canUseAction(editor: Editor, action: TiptapAction) {
+  switch (action) {
+    case tiptapActions.undo:
+      return editor.can().chain().focus().undo().run()
+    case tiptapActions.redo:
+      return editor.can().chain().focus().redo().run()
+    case tiptapActions.text:
+      return editor.can().chain().focus().setParagraph().run()
+    case tiptapActions.heading1:
+      return editor.can().chain().focus().setHeading({ level: 1 }).run()
+    case tiptapActions.heading2:
+      return editor.can().chain().focus().setHeading({ level: 2 }).run()
+    case tiptapActions.heading3:
+      return editor.can().chain().focus().setHeading({ level: 3 }).run()
+    case tiptapActions.heading4:
+      return editor.can().chain().focus().setHeading({ level: 4 }).run()
+    case tiptapActions.heading5:
+      return editor.can().chain().focus().setHeading({ level: 5 }).run()
+    case tiptapActions.heading6:
+      return editor.can().chain().focus().setHeading({ level: 6 }).run()
+    case tiptapActions.codeBlock:
+      return editor.can().chain().focus().toggleCodeBlock().run()
+    case tiptapActions.divider:
+      return editor.can().chain().focus().setHorizontalRule().run()
+    case tiptapActions.bold:
+      return editor.can().chain().focus().toggleBold().run()
+    case tiptapActions.italic:
+      return editor.can().chain().focus().toggleItalic().run()
+    case tiptapActions.strike:
+      return editor.can().chain().focus().toggleStrike().run()
+    case tiptapActions.code:
+      return editor.can().chain().focus().toggleCode().run()
+    case tiptapActions.blockquote:
+      return editor.can().chain().focus().setBlockquote().run()
+    case tiptapActions.divider:
+      return editor.can().chain().focus().setHorizontalRule().run()
+    case tiptapActions.bulletList:
+      return editor.can().chain().focus().toggleBulletList().run()
+    case tiptapActions.orderedList:
+      return editor.can().chain().focus().toggleOrderedList().run()
+    case tiptapActions.left:
+      return editor.can().chain().focus().setTextAlign("left").run()
+    case tiptapActions.center:
+      return editor.can().chain().focus().setTextAlign("center").run()
+    case tiptapActions.right:
+      return editor.can().chain().focus().setTextAlign("right").run()
   }
 }
 
