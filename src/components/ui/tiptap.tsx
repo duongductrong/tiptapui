@@ -4,58 +4,58 @@
 
 import { Button } from "@/components/ui/button"
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/tw"
 import { TextAlign } from "@tiptap/extension-text-align"
 import TiptapTypography from "@tiptap/extension-typography"
 import TiptapUnderline from "@tiptap/extension-underline"
 import {
-    BubbleMenu,
-    Editor,
-    EditorContent,
-    FloatingMenu,
-    useEditor,
+  BubbleMenu,
+  Editor,
+  EditorContent,
+  FloatingMenu,
+  useEditor,
 } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import {
-    AlignCenter,
-    AlignJustify,
-    AlignLeft,
-    AlignRight,
-    Bold,
-    ChevronDown,
-    Code,
-    Code2,
-    Heading1,
-    Heading2,
-    Heading3,
-    Heading4,
-    Heading5,
-    Heading6,
-    Italic,
-    List,
-    ListOrdered,
-    Minus,
-    Redo,
-    Strikethrough,
-    TextQuote,
-    Type,
-    Underline,
-    Undo,
+  AlignCenter,
+  AlignJustify,
+  AlignLeft,
+  AlignRight,
+  Bold,
+  ChevronDown,
+  Code,
+  Code2,
+  Heading1,
+  Heading2,
+  Heading3,
+  Heading4,
+  Heading5,
+  Heading6,
+  Italic,
+  List,
+  ListOrdered,
+  Minus,
+  Redo,
+  Strikethrough,
+  TextQuote,
+  Type,
+  Underline,
+  Undo,
 } from "lucide-react"
 import React, {
-    cloneElement,
-    ComponentProps,
-    createContext,
-    Fragment,
-    PropsWithChildren,
-    ReactElement,
-    useContext,
-    useMemo,
+  cloneElement,
+  ComponentProps,
+  createContext,
+  Fragment,
+  PropsWithChildren,
+  ReactElement,
+  useContext,
+  useMemo,
 } from "react"
 import { ScrollArea } from "./scroll-area"
 
@@ -88,6 +88,7 @@ const extensions = [
    */
   TextAlign.configure({
     types: ["heading", "paragraph"],
+    defaultAlignment: "left",
   }),
 
   /**
@@ -121,6 +122,13 @@ const tiptapActions = {
   right: "right",
   justify: "justify",
 } as const
+
+const tiptapTextAlignActiveActions = [
+  tiptapActions.left,
+  tiptapActions.center,
+  tiptapActions.right,
+  tiptapActions.justify,
+] as TiptapAction[]
 
 type TiptapAction = (typeof tiptapActions)[keyof typeof tiptapActions]
 
@@ -395,26 +403,25 @@ export const TiptapEditor = ({
 export interface TiptapLabelProps extends ComponentProps<"div"> {
   action?: TiptapAction
   label: ":icon :label" | ":label" | ":label :icon" | ":icon"
-
-  filteredActions?: TiptapAction[]
 }
 
 export const TiptapLabel = ({
   className,
   action,
   label: labelPattern = ":label",
-  filteredActions,
   ...props
 }: TiptapLabelProps) => {
+  const ctx = useContext(TipTapBlocksContext)
+
   const keyLabels = useTiptapEditorCurrentActionKeys()
 
   const tiptapBlocks = useMemo(() => {
-    const filteredKeyLabels = filteredActions?.length
-      ? keyLabels.filter((k) => filteredActions.includes(k))
+    const filteredKeyLabels = ctx?.sharedBlocks?.length
+      ? keyLabels.filter((k) => ctx?.sharedBlocks.find((b) => b.key === k))
       : keyLabels
 
     return filteredKeyLabels.map((key) => tiptapBlocksMap.get(key)!)
-  }, [keyLabels])
+  }, [keyLabels, ctx])
 
   const getLabelNode = (block: TiptapBlock) => {
     if (labelPattern === ":icon :label") {
@@ -493,7 +500,7 @@ export const TiptapButton = ({
       variant={isActive ? "secondary" : "ghost"}
       size="icon"
       {...props}
-      className={cn("size-8 min-w-8", className)}
+      className={cn("size-8 w-auto min-w-8 px-2", className)}
       onClick={handleOnClick}
       aria-label={block?.label}
       disabled={!canUseAction(editor, action)}
@@ -503,15 +510,33 @@ export const TiptapButton = ({
   )
 }
 
-export interface TiptapBlocksProps extends ComponentProps<typeof DropdownMenu> {
-  label: TiptapLabelProps["label"]
+export const TiptapDivider = (props: ComponentProps<"span">) => {
+  const { editor } = useTiptapEditor()
 
+  if (!editor) return null
+
+  return (
+    <span {...props} className="inline-flex items-center gap-2 text-border">
+      |
+    </span>
+  )
+}
+
+export interface TipTapBlocksContextType {
+  sharedBlocks: TiptapBlock[]
+}
+
+export const TipTapBlocksContext = createContext<TipTapBlocksContextType>({
+  sharedBlocks: [],
+} as TipTapBlocksContextType)
+
+export interface TiptapBlocksProps extends ComponentProps<typeof DropdownMenu> {
   actions: TiptapAction[]
 }
 
 export const TiptapBlocks = ({
-  label,
   actions = tiptapAllBlocks.map((block) => block.key),
+  children,
   ...props
 }: TiptapBlocksProps) => {
   const { editor } = useTiptapEditor()
@@ -520,51 +545,55 @@ export const TiptapBlocks = ({
     onTiptapEventChangeBlock(editor, key)
   }
 
-  if (!editor) return null
-
   const filteredBlocks = actions.map((action) => tiptapBlocksMap.get(action)!)
 
-  return (
-    <DropdownMenu {...props}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="shadow-none"
-          aria-label="Open blocks menu"
-        >
-          <TiptapLabel
-            label={label}
-            filteredActions={filteredBlocks.map((k) => k.key)}
-          />
+  const sharedValues = useMemo<TipTapBlocksContextType>(
+    () => ({ sharedBlocks: filteredBlocks }),
+    [filteredBlocks]
+  )
 
-          <ChevronDown className="size-3 text-muted-foreground ml-1" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="pb-2">
-        <ScrollArea className="max-h-[300px] overflow-auto">
-          {filteredBlocks.map((item) => (
-            <DropdownMenuItem
-              key={item.label}
-              onClick={() => handleChangeBlock(item.key)}
-            >
-              <div
-                className="flex size-8 items-center justify-center rounded-lg border border-border bg-background"
-                aria-hidden="true"
+  if (!editor) return null
+
+  return (
+    <TipTapBlocksContext.Provider value={sharedValues}>
+      <DropdownMenu {...props}>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            className="shadow-none"
+            aria-label="Open blocks menu"
+          >
+            {children}
+
+            <ChevronDown className="size-3 text-muted-foreground ml-1" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="pb-2">
+          <ScrollArea className="max-h-[300px] overflow-auto">
+            {filteredBlocks.map((item) => (
+              <DropdownMenuItem
+                key={item.label}
+                onClick={() => handleChangeBlock(item.key)}
               >
-                <item.icon size={16} strokeWidth={2} className="opacity-60" />
-              </div>
-              <div>
-                <div className="text-sm font-medium">{item.label}</div>
-                <div className="text-xs text-muted-foreground">
-                  {item.description}
+                <div
+                  className="flex size-8 items-center justify-center rounded-lg border border-border bg-background"
+                  aria-hidden="true"
+                >
+                  <item.icon size={16} strokeWidth={2} className="opacity-60" />
                 </div>
-              </div>
-            </DropdownMenuItem>
-          ))}
-        </ScrollArea>
-      </DropdownMenuContent>
-    </DropdownMenu>
+                <div>
+                  <div className="text-sm font-medium">{item.label}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {item.description}
+                  </div>
+                </div>
+              </DropdownMenuItem>
+            ))}
+          </ScrollArea>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </TipTapBlocksContext.Provider>
   )
 }
 
@@ -652,7 +681,11 @@ export function useTiptapEditorCurrentActionKeys() {
 
 export function useTiptapEditorIsActive(key: TiptapAction) {
   const { editor } = useTiptapEditor()
-  return !editor ? false : editor?.isActive(key)
+  return !editor
+    ? false
+    : tiptapTextAlignActiveActions.includes(key)
+    ? editor?.isActive({ textAlign: key })
+    : editor?.isActive(key)
 }
 
 export function onTiptapEventChangeBlock(editor: Editor, key: TiptapAction) {
@@ -794,6 +827,12 @@ export function getCurrentTiptapAction(editor: Editor): TiptapAction[] {
   }
 
   tiptapAllBlocks.forEach((block) => {
+    if (tiptapTextAlignActiveActions.includes(block.key)) {
+      if (editor.isActive({ textAlign: block.key })) {
+        keys.add(block.key)
+      }
+    }
+
     if (editor.isActive(block.key)) {
       keys.add(block.key)
     }

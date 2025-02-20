@@ -2,9 +2,10 @@ import {
   TiptapBlocks,
   TiptapButton,
   TiptapContent,
+  TiptapDivider,
   TiptapEditor,
   TiptapLabel,
-  TiptapToolbar
+  TiptapToolbar,
 } from "@/components/ui/tiptap"
 
 export interface PartialEditorProps {}
@@ -46,7 +47,7 @@ const PartialEditor = (props: PartialEditorProps) => {
           <TiptapButton action="redo">
             <TiptapLabel label=":icon" />
           </TiptapButton>
-          |
+          <TiptapDivider />
           <TiptapBlocks
             actions={[
               "paragraph",
@@ -58,11 +59,12 @@ const PartialEditor = (props: PartialEditorProps) => {
               "heading6",
               "divider",
               "codeBlock",
-              "blockquote"
+              "blockquote",
             ]}
-            label=":icon :label"
-          />
-          |
+          >
+            <TiptapLabel label=":icon :label" />
+          </TiptapBlocks>
+          <TiptapDivider />
           <TiptapButton action="bold">
             <TiptapLabel label=":icon" />
           </TiptapButton>
@@ -75,7 +77,7 @@ const PartialEditor = (props: PartialEditorProps) => {
           <TiptapButton action="strike">
             <TiptapLabel label=":icon" />
           </TiptapButton>
-          |
+          <TiptapDivider />
           <TiptapButton action="left">
             <TiptapLabel label=":icon" />
           </TiptapButton>
@@ -88,6 +90,9 @@ const PartialEditor = (props: PartialEditorProps) => {
           <TiptapButton action="justify">
             <TiptapLabel label=":icon" />
           </TiptapButton>
+          <TiptapBlocks actions={["left", "center", "right", "justify"]}>
+            <TiptapLabel label=":icon :label" />
+          </TiptapBlocks>
         </TiptapToolbar>
         <TiptapContent className="prose max-w-full" />
       </TiptapEditor>
