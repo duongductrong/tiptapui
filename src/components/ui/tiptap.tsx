@@ -411,7 +411,7 @@ export const TiptapLabel = ({
   label: labelPattern = ":label",
   ...props
 }: TiptapLabelProps) => {
-  const ctx = useContext(TipTapBlocksContext)
+  const ctx = useContext(TipTapDropdownContext)
 
   const keyLabels = useTiptapEditorCurrentActionKeys()
 
@@ -522,23 +522,24 @@ export const TiptapDivider = (props: ComponentProps<"span">) => {
   )
 }
 
-export interface TipTapBlocksContextType {
+export interface TipTapDropdownContextType {
   sharedBlocks: TiptapBlock[]
 }
 
-export const TipTapBlocksContext = createContext<TipTapBlocksContextType>({
+export const TipTapDropdownContext = createContext<TipTapDropdownContextType>({
   sharedBlocks: [],
-} as TipTapBlocksContextType)
+} as TipTapDropdownContextType)
 
-export interface TiptapBlocksProps extends ComponentProps<typeof DropdownMenu> {
+export interface TiptapDropdownProps
+  extends ComponentProps<typeof DropdownMenu> {
   actions: TiptapAction[]
 }
 
-export const TiptapBlocks = ({
+export const TiptapDropdown = ({
   actions = tiptapAllBlocks.map((block) => block.key),
   children,
   ...props
-}: TiptapBlocksProps) => {
+}: TiptapDropdownProps) => {
   const { editor } = useTiptapEditor()
 
   const handleChangeBlock = (key: TiptapAction) => {
@@ -547,7 +548,7 @@ export const TiptapBlocks = ({
 
   const filteredBlocks = actions.map((action) => tiptapBlocksMap.get(action)!)
 
-  const sharedValues = useMemo<TipTapBlocksContextType>(
+  const sharedValues = useMemo<TipTapDropdownContextType>(
     () => ({ sharedBlocks: filteredBlocks }),
     [filteredBlocks]
   )
@@ -555,7 +556,7 @@ export const TiptapBlocks = ({
   if (!editor) return null
 
   return (
-    <TipTapBlocksContext.Provider value={sharedValues}>
+    <TipTapDropdownContext.Provider value={sharedValues}>
       <DropdownMenu {...props}>
         <DropdownMenuTrigger asChild>
           <Button
@@ -593,7 +594,7 @@ export const TiptapBlocks = ({
           </ScrollArea>
         </DropdownMenuContent>
       </DropdownMenu>
-    </TipTapBlocksContext.Provider>
+    </TipTapDropdownContext.Provider>
   )
 }
 

@@ -1,5 +1,5 @@
 import {
-  TiptapBlocks,
+  TiptapDropdown,
   TiptapButton,
   TiptapContent,
   TiptapDivider,
@@ -48,7 +48,7 @@ const PartialEditor = (props: PartialEditorProps) => {
             <TiptapLabel label=":icon" />
           </TiptapButton>
           <TiptapDivider />
-          <TiptapBlocks
+          <TiptapDropdown
             actions={[
               "paragraph",
               "heading1",
@@ -63,7 +63,7 @@ const PartialEditor = (props: PartialEditorProps) => {
             ]}
           >
             <TiptapLabel label=":icon :label" />
-          </TiptapBlocks>
+          </TiptapDropdown>
           <TiptapDivider />
           <TiptapButton action="bold">
             <TiptapLabel label=":icon" />
@@ -90,9 +90,9 @@ const PartialEditor = (props: PartialEditorProps) => {
           <TiptapButton action="justify">
             <TiptapLabel label=":icon" />
           </TiptapButton>
-          <TiptapBlocks actions={["left", "center", "right", "justify"]}>
+          <TiptapDropdown actions={["left", "center", "right", "justify"]}>
             <TiptapLabel label=":icon :label" />
-          </TiptapBlocks>
+          </TiptapDropdown>
         </TiptapToolbar>
         <TiptapContent className="prose max-w-full" />
       </TiptapEditor>
