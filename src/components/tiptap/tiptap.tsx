@@ -58,7 +58,7 @@ import React, {
   useContext,
   useMemo,
 } from "react"
-import { ScrollArea } from "./scroll-area"
+import { ScrollArea } from "../ui/scroll-area"
 import { CodeBlock } from "./extensions/code-block"
 
 const extensions = [

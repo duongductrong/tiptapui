@@ -1,15 +1,16 @@
 "use client"
 
 import {
-  TiptapDropdown,
   TiptapButton,
   TiptapContent,
   TiptapDivider,
+  TiptapDropdown,
   TiptapEditor,
   TiptapLabel,
   TiptapToolbar,
-} from "@/components/ui/tiptap"
+} from "@/components/tiptap/tiptap"
 import { motion } from "motion/react"
+import PartialEditorAddExtension from "./partial-editor-add-extension"
 
 export interface PartialEditorProps {}
 
@@ -101,6 +102,8 @@ const PartialEditor = (props: PartialEditorProps) => {
           <TiptapDropdown actions={["left", "center", "right", "justify"]}>
             <TiptapLabel label=":icon :label" />
           </TiptapDropdown>
+          <TiptapDivider />
+          <PartialEditorAddExtension />
         </TiptapToolbar>
         <TiptapContent className="prose dark:prose-invert max-w-full" />
       </TiptapEditor>
