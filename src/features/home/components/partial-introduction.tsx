@@ -33,6 +33,9 @@ const PartialIntroduction = (props: PartialIntroductionProps) => {
       variants={variants}
       initial="hidden"
       whileInView="visible"
+      viewport={{
+        once: true,
+      }}
     >
       <Badge variant="secondary" className="mb-4 px-3 py-1 text-sm font-medium">
         Shadcn/ui + tiptap
