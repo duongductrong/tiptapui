@@ -86,6 +86,9 @@ const PartialEditor = (props: PartialEditorProps) => {
           <TiptapButton action="strike">
             <TiptapLabel label=":icon" />
           </TiptapButton>
+          <TiptapButton action="image">
+            <TiptapLabel label=":icon" />
+          </TiptapButton>
           <TiptapDivider />
           <TiptapButton action="left">
             <TiptapLabel label=":icon" />

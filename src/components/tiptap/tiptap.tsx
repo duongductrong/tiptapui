@@ -36,6 +36,7 @@ import {
   Heading4,
   Heading5,
   Heading6,
+  ImageUp,
   Italic,
   List,
   ListOrdered,
@@ -51,6 +52,7 @@ import React, {
   Children,
   cloneElement,
   ComponentProps,
+  ComponentType,
   createContext,
   Fragment,
   PropsWithChildren,
@@ -60,6 +62,7 @@ import React, {
 } from "react"
 import { ScrollArea } from "../ui/scroll-area"
 import { CodeBlock } from "./extensions/code-block"
+import { Image, ImageComponent, ImageEvent } from "./extensions/image"
 
 const extensions = [
   /**
@@ -98,15 +101,31 @@ const extensions = [
    */
   TiptapTypography.configure({}),
 
+  /**
+   * @description Allow to format text as code block with syntax highlighting, lowlight
+   * @reference @/components/tiptap/extensions/code-block.tsx
+   */
   CodeBlock.configure({}),
+
+  /**
+   * @description Allow to insert images from the internet
+   * @reference @/components/tiptap/extensions/image.tsx
+   */
+  Image.configure({
+    inline: false,
+    allowBase64: true,
+    allowLocal: true,
+    allowNetwork: true,
+    allowSameDomain: true,
+  }),
 ]
 
 const tiptapActions = {
+  // @tiptap/starter-kit
   undo: "undo",
   redo: "redo",
   bold: "bold",
   italic: "italic",
-  underline: "underline",
   strike: "strike",
   code: "code",
   divider: "divider",
@@ -121,10 +140,15 @@ const tiptapActions = {
   bulletList: "bulletList",
   orderedList: "orderedList",
   codeBlock: "codeBlock",
+  // @tiptap/extension-underline
+  underline: "underline",
+  // @/components/tiptap/extensions/text-align.tsx
   left: "left",
   center: "center",
   right: "right",
   justify: "justify",
+  // @/components/tiptap/extensions/image.tsx
+  image: "image",
 } as const
 
 const tiptapTextAlignActiveActions = [
@@ -141,6 +165,18 @@ type TiptapBlock = {
   icon: React.ElementType
   label: string
   description: string
+
+  /**
+   * @description Optional component to render when the action is selected
+   * @example const ImageComponent = () => JSX.Element
+   */
+  component?: ComponentType<any>
+
+  /**
+   * @description Optional event to dispatch when the action is selected
+   * @example const ImageEvent = new Event("tiptap:image")
+   */
+  event?: Event
 }
 
 const tiptapBlocksMap = new Map<TiptapAction, TiptapBlock>([
@@ -351,6 +387,17 @@ const tiptapBlocksMap = new Map<TiptapAction, TiptapBlock>([
       description: "Align text to the justify",
     },
   ],
+  [
+    tiptapActions.image,
+    {
+      key: tiptapActions.image,
+      icon: ImageUp,
+      label: "Image",
+      description: "Insert an image",
+      event: ImageEvent,
+      component: ImageComponent,
+    },
+  ],
 ])
 
 const tiptapAllBlocks = Array.from(tiptapBlocksMap.values())
@@ -496,7 +543,20 @@ export const TiptapButton = ({
   const isActive = useTiptapEditorIsActive(action)
 
   const handleOnClick = () => {
-    onTiptapEventChangeBlock(editor, action)
+    const dispatchEventHandler = () => {
+      const customEvt = tiptapBlocksMap.get(action)?.event
+      if (customEvt) {
+        document.dispatchEvent(customEvt)
+      }
+    }
+
+    switch (action) {
+      case tiptapActions.image:
+        dispatchEventHandler()
+        break
+      default:
+        onTiptapEventChangeBlock(editor, action)
+    }
   }
 
   const block = useMemo(() => tiptapBlocksMap.get(action), [action])
@@ -504,17 +564,20 @@ export const TiptapButton = ({
   if (!editor) return null
 
   return (
-    <Button
-      variant={isActive ? "secondary" : "ghost"}
-      size="icon"
-      {...props}
-      className={cn("size-8 w-auto min-w-8 px-2", className)}
-      onClick={handleOnClick}
-      aria-label={block?.label}
-      disabled={!canUseAction(editor, action)}
-    >
-      {cloneElement(children as ReactElement, { action } as any)}
-    </Button>
+    <Fragment>
+      <Button
+        variant={isActive ? "secondary" : "ghost"}
+        size="icon"
+        {...props}
+        className={cn("size-8 w-auto min-w-8 px-2", className)}
+        onClick={handleOnClick}
+        aria-label={block?.label}
+        disabled={!canUseAction(editor, action)}
+      >
+        {cloneElement(children as ReactElement, { action } as any)}
+      </Button>
+      {block?.component ? <block.component /> : null}
+    </Fragment>
   )
 }
 
@@ -697,7 +760,11 @@ export function useTiptapEditorIsActive(key: TiptapAction) {
     : editor?.isActive(key)
 }
 
-export function onTiptapEventChangeBlock(editor: Editor, key: TiptapAction) {
+export function onTiptapEventChangeBlock(
+  editor: Editor,
+  key: TiptapAction,
+  options: Record<string, any> = {}
+) {
   switch (key) {
     case tiptapActions.undo:
       editor.chain().focus().undo().run()
@@ -764,8 +831,20 @@ export function onTiptapEventChangeBlock(editor: Editor, key: TiptapAction) {
       break
     case tiptapActions.right:
       editor.chain().focus().setTextAlign("right").run()
+      break
     case tiptapActions.underline:
       editor.chain().focus().toggleUnderline().run()
+      break
+    case tiptapActions.image:
+      editor
+        .chain()
+        .focus()
+        .setImage({
+          src: options.src,
+          alt: options?.alt,
+          title: options?.title,
+        })
+        .run()
       break
   }
 }
@@ -821,6 +900,8 @@ export function canUseAction(editor: Editor, action: TiptapAction) {
     // Required @tiptap/extension-underline
     case tiptapActions.underline:
       return editor.can().chain().focus().toggleUnderline().run()
+    case tiptapActions.image:
+      return true
   }
 }
 
