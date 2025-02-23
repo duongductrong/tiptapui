@@ -1,3 +1,5 @@
+"use client"
+
 import {
   TiptapDropdown,
   TiptapButton,
@@ -7,13 +9,19 @@ import {
   TiptapLabel,
   TiptapToolbar,
 } from "@/components/ui/tiptap"
+import { motion } from "motion/react"
 
 export interface PartialEditorProps {}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const PartialEditor = (props: PartialEditorProps) => {
   return (
-    <div className="max-w-4xl mx-auto">
+    <motion.div
+      className="max-w-4xl mx-auto"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: 0.7 }}
+    >
       <TiptapEditor
         // floatingMenu={<TipTapFloatingMenu> </TipTapFloatingMenu>}
         // bubbleMenu={
@@ -96,7 +104,7 @@ const PartialEditor = (props: PartialEditorProps) => {
         </TiptapToolbar>
         <TiptapContent className="prose dark:prose-invert max-w-full" />
       </TiptapEditor>
-    </div>
+    </motion.div>
   )
 }
 
