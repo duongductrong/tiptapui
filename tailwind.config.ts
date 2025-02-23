@@ -18,6 +18,13 @@ export default {
           xl: "1140px",
           "2xl": "1140px",
         },
+        padding: {
+          DEFAULT: "1rem",
+          sm: "1rem",
+          md: "1rem",
+          lg: "1rem",
+          xl: "0",
+        },
       },
       fontFamily: {
         sans: ["var(--font-inter)", ...fontFamily.sans],

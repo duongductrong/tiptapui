@@ -94,7 +94,7 @@ const PartialEditor = (props: PartialEditorProps) => {
             <TiptapLabel label=":icon :label" />
           </TiptapDropdown>
         </TiptapToolbar>
-        <TiptapContent className="prose max-w-full" />
+        <TiptapContent className="prose dark:prose-invert max-w-full" />
       </TiptapEditor>
     </div>
   )

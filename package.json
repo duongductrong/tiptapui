@@ -63,6 +63,7 @@
     "input-otp": "^1.4.2",
     "lodash": "^4.17.21",
     "lucide-react": "^0.475.0",
+    "motion": "^12.4.7",
     "next": "15.1.6",
     "next-auth": "beta",
     "next-intl": "^3.26.3",

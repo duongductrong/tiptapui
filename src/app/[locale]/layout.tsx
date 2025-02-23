@@ -40,7 +40,7 @@ export default async function RootLayout({ children, params }: LayoutProps) {
     <html lang={locale} suppressHydrationWarning>
       <body className={cn(inter.variable, "font-sans antialiased")}>
         <NextIntlClientProvider messages={messages} locale={locale}>
-          <ThemeProvider attribute="class" forcedTheme="light">
+          <ThemeProvider attribute="class">
             <TanstackQueryClientProvider>
               {/* <SessionProvider session={session}>{children}</SessionProvider> */}
               {children}
