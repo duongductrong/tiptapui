@@ -1,4 +1,4 @@
-import FrontLayout from "@/layouts/front-tage/front-layout"
+import FrontLayout from "@/layouts/front-stage/front-layout"
 import { PropsWithChildren } from "react"
 
 const Layout = ({ children }: PropsWithChildren) => {

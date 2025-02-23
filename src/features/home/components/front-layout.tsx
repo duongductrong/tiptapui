@@ -1,7 +1,7 @@
 import { PropsWithChildren } from "react"
-import FrontContent from "../../../layouts/front-tage/front-content"
-import FrontFooter from "../../../layouts/front-tage/front-footer"
-import FrontHeader from "../../../layouts/front-tage/front-header"
+import FrontContent from "../../../layouts/front-stage/front-content"
+import FrontFooter from "../../../layouts/front-stage/front-footer"
+import FrontHeader from "../../../layouts/front-stage/front-header"
 
 export interface FrontLayoutProps extends PropsWithChildren {}
 

@@ -48,6 +48,7 @@ import {
   Undo,
 } from "lucide-react"
 import React, {
+  Children,
   cloneElement,
   ComponentProps,
   createContext,
@@ -87,7 +88,7 @@ const extensions = [
    * @reference https://tiptap.dev/api/extensions/text-align
    */
   TextAlign.configure({
-    types: ["heading", "paragraph"],
+    types: ["heading", "paragraph", "blockquote", "bulletList", "orderedList"],
     defaultAlignment: "left",
   }),
 
@@ -463,12 +464,16 @@ export const TiptapLabel = ({
     return tiptapBlocks.map(getLabelNode)
   }, [action, tiptapBlocks])
 
+  if (tiptapBlocks.length) {
+    // console.log("tiptapBlocksMap.get(action!)!", tiptapBlocks)
+  }
+
   return (
     <span
       {...props}
       className={cn("inline-flex items-center gap-2", className)}
     >
-      {label}
+      {Children.count(label) !== 0 ? label : getLabelNode(ctx?.sharedBlocks[0])}
     </span>
   )
 }
