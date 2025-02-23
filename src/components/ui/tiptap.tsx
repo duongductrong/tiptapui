@@ -59,6 +59,7 @@ import React, {
   useMemo,
 } from "react"
 import { ScrollArea } from "./scroll-area"
+import { CodeBlock } from "./extensions/code-block"
 
 const extensions = [
   /**
@@ -96,6 +97,8 @@ const extensions = [
    * @reference https://tiptap.dev/api/extensions/typography
    */
   TiptapTypography.configure({}),
+
+  CodeBlock.configure({}),
 ]
 
 const tiptapActions = {

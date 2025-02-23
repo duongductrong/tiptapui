@@ -1,6 +1,22 @@
-import { SwitchThemeButton } from "@/components/widgets/theme"
+"use client"
+
+import { Button } from "@/components/ui/button"
 import { Link } from "@/i18n/routing"
-import { ArrowUpRight, Diameter } from "lucide-react"
+import { ArrowUpRight, Diameter, Loader2 } from "lucide-react"
+import dynamic from "next/dynamic"
+
+const SwitchThemeButton = dynamic(
+  () =>
+    import("@/components/widgets/theme").then((mod) => mod.SwitchThemeButton),
+  {
+    ssr: false,
+    loading: () => (
+      <Button variant="ghost" size="icon">
+        <Loader2 className="size-4 animate-spin" />
+      </Button>
+    ),
+  }
+)
 
 export interface FrontHeaderProps {}
 
