@@ -11,6 +11,7 @@ import {
 } from "@/components/tiptap/tiptap"
 import { motion } from "motion/react"
 import PartialEditorAddExtension from "./partial-editor-add-extension"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export interface PartialEditorProps {}
 
@@ -18,11 +19,25 @@ export interface PartialEditorProps {}
 const PartialEditor = (props: PartialEditorProps) => {
   return (
     <motion.div
-      className="max-w-4xl mx-auto"
+      className="max-w-4xl mx-auto mt-8 md:mt-16"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.7 }}
     >
+      <div className="flex items-center justify-center mb-4">
+        <Tabs defaultValue="document">
+          <TabsList>
+            <TabsTrigger value="document">Document</TabsTrigger>
+            <TabsTrigger value="essential" disabled>
+              Essential
+            </TabsTrigger>
+            <TabsTrigger value="advanced" disabled>
+              Advanced
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
       <TiptapEditor
         // floatingMenu={<TipTapFloatingMenu> </TipTapFloatingMenu>}
         // bubbleMenu={

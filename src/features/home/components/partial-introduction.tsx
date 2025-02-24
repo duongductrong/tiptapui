@@ -29,7 +29,7 @@ const itemVariants: Variants = {
 const PartialIntroduction = (props: PartialIntroductionProps) => {
   return (
     <motion.div
-      className="flex flex-col py-12 md:py-16 items-center text-center"
+      className="flex flex-col py-12 md:py-8 items-center text-center"
       variants={variants}
       initial="hidden"
       whileInView="visible"
