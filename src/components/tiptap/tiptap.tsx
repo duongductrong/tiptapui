@@ -62,7 +62,8 @@ import React, {
 } from "react"
 import { ScrollArea } from "../ui/scroll-area"
 import { CodeBlock } from "./extensions/code-block"
-import { Image, ImageComponent, ImageEvent } from "./extensions/image"
+import { Image, ImageEvent } from "./extensions/image"
+import { ImageWidget } from "./widgets/image"
 
 const extensions = [
   /**
@@ -168,9 +169,9 @@ type TiptapBlock = {
 
   /**
    * @description Optional component to render when the action is selected
-   * @example const ImageComponent = () => JSX.Element
+   * @example const ImageWidget = () => JSX.Element
    */
-  component?: ComponentType<any>
+  widget?: ComponentType<any>
 
   /**
    * @description Optional event to dispatch when the action is selected
@@ -395,7 +396,7 @@ const tiptapBlocksMap = new Map<TiptapAction, TiptapBlock>([
       label: "Image",
       description: "Insert an image",
       event: ImageEvent,
-      component: ImageComponent,
+      widget: ImageWidget,
     },
   ],
 ])
@@ -576,7 +577,7 @@ export const TiptapButton = ({
       >
         {cloneElement(children as ReactElement, { action } as any)}
       </Button>
-      {block?.component ? <block.component /> : null}
+      {block?.widget ? <block.widget /> : null}
     </Fragment>
   )
 }

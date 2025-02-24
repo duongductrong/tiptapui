@@ -1,15 +1,4 @@
-import { useTiptapEditor } from "@/components/tiptap/tiptap"
-import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
 import { Node, mergeAttributes } from "@tiptap/core"
-import { useEffect, useRef, useState } from "react"
 
 export interface ImageOptions {
   inline: boolean
@@ -119,62 +108,3 @@ export const Image = Node.create<ImageOptions>({
     }
   },
 })
-
-export const ImageComponent = () => {
-  const { editor } = useTiptapEditor()
-
-  const inputRef = useRef<HTMLInputElement>(null)
-  const altRef = useRef<HTMLInputElement>(null)
-
-  const [open, setOpen] = useState(false)
-
-  const handleInsert = () => {
-    const url = inputRef.current?.value
-    const alt = altRef.current?.value
-
-    if (!url) return
-
-    setOpen(false)
-
-    editor.chain().focus().setImage({ src: url, alt }).run()
-  }
-
-  useEffect(() => {
-    const handler = () => {
-      setOpen((prev) => !prev)
-    }
-
-    document.addEventListener("tiptap:image", handler)
-
-    return () => {
-      document.removeEventListener("tiptap:image", handler)
-    }
-  }, [open])
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Insert Image</DialogTitle>
-        </DialogHeader>
-
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2 flex-1">
-            <Input ref={inputRef} type="text" placeholder="Image URL" />
-            <Button variant="outline" size="default" className="shrink-0">
-              Browse
-            </Button>
-          </div>
-          <Input ref={altRef} type="text" placeholder="Alt Text" />
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleInsert}>Insert</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}

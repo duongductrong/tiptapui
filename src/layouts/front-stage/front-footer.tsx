@@ -5,7 +5,7 @@ export interface FrontFooterProps {}
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const FrontFooter = (props: FrontFooterProps) => {
   return (
-    <footer className="container mx-auto flex items-center justify-between h-16">
+    <footer className="container mx-auto flex items-center justify-between h-16 mt-48">
       <p className="text-sm text-muted-foreground">
         &copy; {new Date().getFullYear()} Tiptap Extensions. All rights
         reserved.
